@@ -2,6 +2,7 @@ package dev.ai4j.openai4j;
 
 import static dev.ai4j.openai4j.LogLevel.DEBUG;
 
+import dev.ai4j.openai4j.chat.AudioSettings;
 import dev.ai4j.openai4j.chat.ChatCompletionRequest;
 import dev.ai4j.openai4j.chat.ChatCompletionResponse;
 import dev.ai4j.openai4j.completion.CompletionRequest;
@@ -164,6 +165,9 @@ public abstract class OpenAiClient {
         public boolean logStreamingResponses;
         public Path persistTo;
         public Map<String, String> customHeaders;
+
+        public AudioSettings audioSettings;
+        public List<String> modalities;
 
         public abstract T build();
 
@@ -350,6 +354,16 @@ public abstract class OpenAiClient {
          */
         public B customHeaders(Map<String, String> customHeaders) {
             this.customHeaders = customHeaders;
+            return (B) this;
+        }
+
+        public B audioSettings(AudioSettings audioSettings) {
+            this.audioSettings = audioSettings;
+            return (B) this;
+        }
+
+        public B modalities(List<String> modalities) {
+            this.modalities = modalities;
             return (B) this;
         }
     }

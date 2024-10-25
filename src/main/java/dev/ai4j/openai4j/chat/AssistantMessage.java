@@ -34,6 +34,8 @@ public final class AssistantMessage implements Message {
     @JsonProperty
     @Deprecated
     private final FunctionCall functionCall;
+    @JsonProperty
+    private final AudioData audio; // 新しく追加
 
     private AssistantMessage(Builder builder) {
         this.content = builder.content;
@@ -41,6 +43,7 @@ public final class AssistantMessage implements Message {
         this.toolCalls = builder.toolCalls;
         this.refusal = builder.refusal;
         this.functionCall = builder.functionCall;
+        this.audio = builder.audio; // 新しく追加
     }
 
     public Role role() {
@@ -68,11 +71,15 @@ public final class AssistantMessage implements Message {
         return functionCall;
     }
 
+    public AudioData audio() { // 新しく追加
+        return audio;
+    }
+
     @Override
     public boolean equals(Object another) {
         if (this == another) return true;
         return another instanceof AssistantMessage
-                && equalTo((AssistantMessage) another);
+               && equalTo((AssistantMessage) another);
     }
 
     private boolean equalTo(AssistantMessage another) {
@@ -81,7 +88,8 @@ public final class AssistantMessage implements Message {
                 && Objects.equals(name, another.name)
                 && Objects.equals(toolCalls, another.toolCalls)
                 && Objects.equals(refusal, another.refusal)
-                && Objects.equals(functionCall, another.functionCall);
+                && Objects.equals(functionCall, another.functionCall)
+               && Objects.equals(audio, another.audio); // 新しく追加
     }
 
     @Override
@@ -93,6 +101,7 @@ public final class AssistantMessage implements Message {
         h += (h << 5) + Objects.hashCode(toolCalls);
         h += (h << 5) + Objects.hashCode(refusal);
         h += (h << 5) + Objects.hashCode(functionCall);
+        h += (h << 5) + Objects.hashCode(audio); // 新しく追加
         return h;
     }
 
@@ -105,7 +114,8 @@ public final class AssistantMessage implements Message {
                 + ", toolCalls=" + toolCalls
                 + ", refusal=" + refusal
                 + ", functionCall=" + functionCall
-                + "}";
+                + ", audio=" + audio // 新しく追加
+               + "}";
     }
 
     public static AssistantMessage from(String content) {
@@ -129,6 +139,7 @@ public final class AssistantMessage implements Message {
         private Boolean refusal;
         @Deprecated
         private FunctionCall functionCall;
+        private AudioData audio; // 新しく追加
 
         private Builder() {
         }
@@ -166,8 +177,91 @@ public final class AssistantMessage implements Message {
             return this;
         }
 
+        public Builder audio(AudioData audio) { // 新しく追加
+            this.audio = audio;
+            return this;
+        }
+
         public AssistantMessage build() {
             return new AssistantMessage(this);
+        }
+    }
+
+    // AudioDataクラスの定義
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class AudioData {
+        @JsonProperty
+        private final String id;
+        @JsonProperty
+        private final String data; // Base64でエンコードされた音声データ
+
+        // 以下のようなJsonPropertyも定義したい。
+        // "expires_at": 1729270516,
+        //          "transcript": "I'm sorry, but I cannot provide real-time information such as the current weather in Boston. You can check the weather on your local news, weather websites, or on a weather app."
+
+        @JsonProperty
+        private final Long expiresAt;
+        @JsonProperty
+        private final String transcript;
+
+        public AudioData(@JsonProperty("id") String id,
+                         @JsonProperty("data") String data,
+                         @JsonProperty("expires_at") Long expiresAt,
+                         @JsonProperty("transcript") String transcript) {
+            this.id = id;
+            this.data = data;
+            this.expiresAt = expiresAt;
+            this.transcript = transcript;
+        }
+
+        public String id() {
+            return id;
+        }
+
+        public String data() {
+            return data;
+        }
+
+        public Long expiresAt() {
+            return expiresAt;
+        }
+
+        public String transcript() {
+            return transcript;
+        }
+        @Override
+        public boolean equals(Object another) {
+            if (this == another) return true;
+            return another instanceof AudioData
+                   && equalTo((AudioData) another);
+        }
+
+        private boolean equalTo(AudioData another) {
+            return Objects.equals(id, another.id)
+                   && Objects.equals(data, another.data)
+                    && Objects.equals(expiresAt, another.expiresAt)
+                    && Objects.equals(transcript, another.transcript);
+        }
+
+        @Override
+        public int hashCode() {
+            int h = 5381;
+            h += (h << 5) + Objects.hashCode(id);
+            h += (h << 5) + Objects.hashCode(data);
+            h += (h << 5) + Objects.hashCode(expiresAt);
+            h += (h << 5) + Objects.hashCode(transcript);
+            return h;
+        }
+
+        @Override
+        public String toString() {
+            return "AudioData{"
+                   + "id=" + id
+                   + ", data=" + data
+                     + ", expiresAt=" + expiresAt
+                        + ", transcript=" + transcript
+                   + "}";
         }
     }
 }

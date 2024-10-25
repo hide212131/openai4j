@@ -69,6 +69,14 @@ public final class ChatCompletionRequest {
     @JsonProperty
     @Deprecated
     private final FunctionCall functionCall;
+    @JsonProperty
+    private final AudioSettings audio;
+
+    /**
+     * "modalities": as string list
+     */
+    @JsonProperty
+    private final List<String> modalities;
 
     private ChatCompletionRequest(Builder builder) {
         this.model = builder.model;
@@ -92,6 +100,8 @@ public final class ChatCompletionRequest {
         this.parallelToolCalls = builder.parallelToolCalls;
         this.functions = builder.functions;
         this.functionCall = builder.functionCall;
+        this.audio = builder.audioSettings;
+        this.modalities = builder.modalities;
     }
 
     public String model() {
@@ -180,6 +190,14 @@ public final class ChatCompletionRequest {
         return functionCall;
     }
 
+    public AudioSettings audioSettings() {
+        return audio;
+    }
+
+    public List<String> modalities() {
+        return modalities;
+    }
+
     @Override
     public boolean equals(Object another) {
         if (this == another) return true;
@@ -208,7 +226,9 @@ public final class ChatCompletionRequest {
                 && Objects.equals(toolChoice, another.toolChoice)
                 && Objects.equals(parallelToolCalls, another.parallelToolCalls)
                 && Objects.equals(functions, another.functions)
-                && Objects.equals(functionCall, another.functionCall);
+                && Objects.equals(functionCall, another.functionCall)
+                && Objects.equals(audio, another.audio)
+                && Objects.equals(modalities, another.modalities);
     }
 
     @Override
@@ -235,34 +255,38 @@ public final class ChatCompletionRequest {
         h += (h << 5) + Objects.hashCode(parallelToolCalls);
         h += (h << 5) + Objects.hashCode(functions);
         h += (h << 5) + Objects.hashCode(functionCall);
+        h += (h << 5) + Objects.hashCode(audio);
+        h += (h << 5) + Objects.hashCode(modalities);
         return h;
     }
 
     @Override
     public String toString() {
         return "ChatCompletionRequest{"
-                + "model=" + model
-                + ", messages=" + messages
-                + ", temperature=" + temperature
-                + ", topP=" + topP
-                + ", n=" + n
-                + ", stream=" + stream
-                + ", streamOptions=" + streamOptions
-                + ", stop=" + stop
-                + ", maxTokens=" + maxTokens
-                + ", maxCompletionTokens=" + maxCompletionTokens
-                + ", presencePenalty=" + presencePenalty
-                + ", frequencyPenalty=" + frequencyPenalty
-                + ", logitBias=" + logitBias
-                + ", user=" + user
-                + ", responseFormat=" + responseFormat
-                + ", seed=" + seed
-                + ", tools=" + tools
-                + ", toolChoice=" + toolChoice
-                + ", parallelToolCalls=" + parallelToolCalls
-                + ", functions=" + functions
-                + ", functionCall=" + functionCall
-                + "}";
+               + "model=" + model
+               + ", messages=" + messages
+               + ", temperature=" + temperature
+               + ", topP=" + topP
+               + ", n=" + n
+               + ", stream=" + stream
+               + ", streamOptions=" + streamOptions
+               + ", stop=" + stop
+               + ", maxTokens=" + maxTokens
+               + ", maxCompletionTokens=" + maxCompletionTokens
+               + ", presencePenalty=" + presencePenalty
+               + ", frequencyPenalty=" + frequencyPenalty
+               + ", logitBias=" + logitBias
+               + ", user=" + user
+               + ", responseFormat=" + responseFormat
+               + ", seed=" + seed
+               + ", tools=" + tools
+               + ", toolChoice=" + toolChoice
+               + ", parallelToolCalls=" + parallelToolCalls
+               + ", functions=" + functions
+               + ", functionCall=" + functionCall
+               + ", audioSettings=" + audio
+               + ", modalities=" + modalities
+               + "}";
     }
 
     public static Builder builder() {
@@ -297,6 +321,8 @@ public final class ChatCompletionRequest {
         private List<Function> functions;
         @Deprecated
         private FunctionCall functionCall;
+        private AudioSettings audioSettings;
+        private List<String> modalities;
 
         private Builder() {
         }
@@ -323,6 +349,8 @@ public final class ChatCompletionRequest {
             parallelToolCalls(instance.parallelToolCalls);
             functions(instance.functions);
             functionCall(instance.functionCall);
+            audioSettings(instance.audio);
+            modalities(instance.modalities);
             return this;
         }
 
@@ -530,6 +558,18 @@ public final class ChatCompletionRequest {
         @Deprecated
         public Builder functionCall(FunctionCall functionCall) {
             this.functionCall = functionCall;
+            return this;
+        }
+
+        public Builder audioSettings(AudioSettings audioSettings) {
+            this.audioSettings = audioSettings;
+            return this;
+        }
+
+        public Builder modalities(List<String> modalities) {
+            if (modalities != null) {
+                this.modalities = unmodifiableList(modalities);
+            }
             return this;
         }
 

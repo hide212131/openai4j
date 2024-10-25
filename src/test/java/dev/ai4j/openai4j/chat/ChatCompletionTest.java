@@ -7,6 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
+import javax.sound.sampled.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -20,6 +25,11 @@ import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.EnumSource.Mode.EXCLUDE;
 import static org.junit.jupiter.params.provider.EnumSource.Mode.INCLUDE;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import java.io.ByteArrayInputStream;
 
 class ChatCompletionTest extends RateLimitAwareTest {
 
@@ -752,5 +762,68 @@ class ChatCompletionTest extends RateLimitAwareTest {
 
         // then
         assertThat(response.content()).contains("Berlin");
+    }
+
+    @Test
+    void testAudioSettings() throws IOException, LineUnavailableException {
+        // given
+        AudioSettings audioSettings = new AudioSettings("alloy", "wav");
+
+        ChatCompletionRequest request = ChatCompletionRequest.builder()
+                .model("gpt-4o-audio-preview")
+                .addUserMessage("hello！")
+                .audioSettings(audioSettings)
+                .modalities(asList("text", "audio"))
+                .build();
+
+        // when
+        ChatCompletionResponse response = client.chatCompletion(request).execute();
+
+        // then
+        // Get Audio Data
+        AssistantMessage.AudioData audioData = response.choices().get(0).message().audio();
+        String data = audioData.data();
+
+        byte[] audioBytes = Base64.getDecoder().decode(data);
+        AudioInputStream audioInputStream = new AudioInputStream(new ByteArrayInputStream(audioBytes), new AudioFormat(16000, 16, 1, true, false), audioBytes.length);
+        Clip clip = AudioSystem.getClip();
+        clip.open(audioInputStream);
+        clip.start();
+        assertThat(audioData).isNotNull();
+    }
+
+    @Test
+    void testAudioSettingsAtClient() throws IOException, LineUnavailableException {
+        // given
+        AudioSettings audioSettings = new AudioSettings("alloy", "wav");
+
+        ChatCompletionRequest request = ChatCompletionRequest.builder()
+                .model("gpt-4o-audio-preview")
+                .addUserMessage("hello！")
+                .build();
+
+        OpenAiClient client = OpenAiClient.builder()
+                .baseUrl(System.getenv("OPENAI_BASE_URL"))
+                .openAiApiKey(System.getenv("OPENAI_API_KEY"))
+                .logRequests()
+                .logResponses()
+                .audioSettings(audioSettings)
+                .modalities(asList("text", "audio"))
+                .build();
+
+        // when
+        ChatCompletionResponse response = client.chatCompletion(request).execute();
+
+        // then
+        // Get Audio Data
+        AssistantMessage.AudioData audioData = response.choices().get(0).message().audio();
+        String data = audioData.data();
+
+        byte[] audioBytes = Base64.getDecoder().decode(data);
+        AudioInputStream audioInputStream = new AudioInputStream(new ByteArrayInputStream(audioBytes), new AudioFormat(16000, 16, 1, true, false), audioBytes.length);
+        Clip clip = AudioSystem.getClip();
+        clip.open(audioInputStream);
+        clip.start();
+        assertThat(audioData).isNotNull();
     }
 }
